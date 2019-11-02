@@ -7,4 +7,5 @@ from django.http.response import HttpResponse
 class DailyReportView(View):
     def get(self, *args, **kwargs):
         device_id = kwargs["device_id"]
-        return HttpResponse(f"{device_id}")
+        #return HttpResponse(f"{device_id}")
+        return render('monar_tbreports/templates/reports/daily_report.html')
