@@ -165,7 +165,7 @@ fabric.properties
 
 # Assets
 media/
-/static/
+/staticfiles/
 
 # Config Files
 .env
