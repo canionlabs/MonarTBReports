@@ -82,6 +82,11 @@ DATABASES = {
     }
 }
 
+# TB Settings
+TB_USERNAME = config("TB_USERNAME")
+TB_PASSWORD = config("TB_PASSWORD")
+TB_URL = config("TB_URL")
+
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
