@@ -5,6 +5,8 @@ import requests
 
 from django.conf import settings
 
+from .exceptions import TBException
+
 
 class TB:
     URL = settings.TB_URL
@@ -18,7 +20,10 @@ class TB:
     @staticmethod
     def _response_handler(status_code, response):
         if status_code != response.status_code:
-            raise Exception("Erro tal")
+            raise TBException(
+                f"Unexpected Response ({response.status_code}) \n"
+                f"{response.content}"
+            )
 
     def _update_headers(self, new_header: dict):
         self.session.headers.update(new_header)
