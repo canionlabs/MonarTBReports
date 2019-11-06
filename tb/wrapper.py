@@ -43,7 +43,7 @@ class TB:
 
     def timeseries(
         self, entity_id, starts, ends,
-        entity_type="DEVICE", interval=None, agg=None, limit=None
+        entity_type="DEVICE", interval=60000, agg="AVG", limit=1000
     ):
         """
         Available params (API Side)
@@ -56,10 +56,8 @@ class TB:
         limit: the max amount of data points to return or intervals to process.
         """
         base_querystring = {
-            "entity_type": entity_type,
-            "entity_id": entity_id,
-            "starts": starts,
-            "ends": ends,
+            "startTS": starts,
+            "endTS": ends,
             "interval": interval,
             "agg": agg,
             "limit": limit,
