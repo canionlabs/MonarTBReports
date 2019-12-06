@@ -86,6 +86,7 @@ DATABASES = {
 TB_USERNAME = config("TB_USERNAME")
 TB_PASSWORD = config("TB_PASSWORD")
 TB_URL = config("TB_URL")
+DEVICE_ID = config("DEVICE_ID")
 
 
 # Password validation

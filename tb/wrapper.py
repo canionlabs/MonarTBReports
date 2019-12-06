@@ -1,6 +1,3 @@
-import time
-from urllib.parse import urlencode
-
 import requests
 
 from django.conf import settings
@@ -36,45 +33,8 @@ class TB:
         })
         self._response_handler(200, response)
 
-        auth_data = response.json()
-        self._update_headers({
-            "X-Authorization": f"Bearer {auth_data['token']}"
-        })
-
-    def timeseries(
-        self, entity_id, starts, ends,
-        entity_type="DEVICE", interval=60000, agg="AVG", limit=1000
-    ):
-        """
-        Available params (API Side)
-        ---------------------------
-        keys: comma separated list of telemetry keys to fetch.
-        startTs: unix timestamp that identifies start of the interval in milliseconds.
-        endTs: unix timestamp that identifies end of the interval in milliseconds.
-        interval: the aggregation interval, in milliseconds.
-        agg: the aggregation function. One of MIN, MAX, AVG, SUM, COUNT, NONE.
-        limit: the max amount of data points to return or intervals to process.
-        """
-        base_querystring = {
-            "startTS": starts,
-            "endTS": ends,
-            "interval": interval,
-            "agg": agg,
-            "limit": limit,
-        }
-
-        params_querystring = {
-            key: value
-            for key, value in base_querystring.items()
-            if value is not None
-        }
-
-        querystring = urlencode(params_querystring)
-        timeseries_url = (
-            f"{self.URL}/api/"
-            f"plugins/telemetry/{entity_type}/{entity_id}/values/timeseries"
-            f"?{querystring}"
-        )
-        response = self.session.get(timeseries_url)
-        self._response_handler(200, response)
+        # auth_data = response.json()
+        # self._update_headers({
+        #     "X-Authorization": f"Bearer {auth_data['token']}"
+        # })
         return response.json()
