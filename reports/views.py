@@ -42,12 +42,12 @@ class DailyReportView(View):
         starts, ends = self._get_starts_ends_timestamps(fmt_date)
 
         data = {
-            'tb_context':tb_context["token"],
-            'device_id':device_id,
-            'startTs': starts,
-            'endTs': ends
+            'tb_context': tb_context["token"],
+            'device_id': device_id,
+            'startTs': int(starts)*1000,
+            'endTs': int(ends)*1000
         }
 
         return TemplateResponse(
-            request, 'reports/ws_request.html', data
+            request, 'reports/daily_report.html', data
         )
