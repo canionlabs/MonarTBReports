@@ -6,56 +6,7 @@
     <meta charset="utf-8">
     <title>SensorWeb</title>
     <link rel="stylesheet" type="text/css" href="{% static "css/reports/daily_report.css" %}">
-    <script type="text/javascript">
-      function WebSocketAPI() {
-          var token = "{{ tb_context }}";
-          var entityId = "{{ device_id }}";
-          // var keys = "t0";
-          var webSocket = new WebSocket("ws://platform.canionlabs.io:9090/api/ws/plugins/telemetry?token="+token);
-
-          webSocket.onopen = function () {
-              var object = {
-                  tsSubCmds: [],
-                  historyCmds: [
-                    {
-                        cmdId: 1,
-                        entityType: "DEVICE",
-                        entityId: entityId,
-                        keys: "t0,h0",
-                        startTs: "{{ startTs }}",
-                        endTs: "{{ endTs }}"
-                    }
-                  ],
-                  attrSubCmds: []
-              };
-              var data = JSON.stringify(object);
-              webSocket.send(data);
-              // console.log("Message is sent: " + data);
-          };
-
-          webSocket.onmessage = function (event) {
-              var received_msg = JSON.parse(event.data);
-
-              var bigger = 0;
-              var smaller = 100;
-              
-              for (var index = 0; index < received_msg.data.t0.length; index+=1) {
-                if(smaller>received_msg.data.t0[index][1]){
-                  smaller = received_msg.data.t0[index][1];
-                } 
-                if(bigger<received_msg.data.t0[index][1]){
-                  bigger = received_msg.data.t0[index][1];
-                }
-              }
-
-              console.log("Maior: "+bigger+" Smaller: "+smaller);
-          };
-
-          webSocket.onclose = function (event) {
-              console.log("Connection is closed!");
-          };
-      }
-    </script>
+    <script type="text/javascript" src="{% static "js/reports/websocket.js" %}"></script>
   </head>
   <body>
     <div class="main">
@@ -736,7 +687,7 @@
       </div>
     </div>
     <div id="sse">
-        <a href="javascript:WebSocketAPI()">Run WebSocket</a>
+        <a href="javascript:WebSocketAPI(device_token='{{tb_context}}', device_id='{{device_id}}', startTs='{{startTs}}', endTs='{{endTs}}')">Run WebSocket</a>
     </div>
   </body>
 </html>
