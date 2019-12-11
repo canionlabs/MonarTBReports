@@ -31,13 +31,13 @@ class DailyReportView(View):
 
     def get(self, request, *args, **kwargs):
 
+        device_id = kwargs["device_id"]
         selected_date = request.GET.get("date", timezone.now())
         try:
             fmt_date = self._datetime_handler(selected_date)
         except ValueError as e:
             return HttpResponseBadRequest("Invalid date format")
 
-        device_id = settings.DEVICE_ID
         tb_context = self.request_token()
         starts, ends = self._get_starts_ends_timestamps(fmt_date)
 
