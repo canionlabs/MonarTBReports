@@ -6,7 +6,6 @@
     <meta charset="utf-8">
     <title>SensorWeb</title>
     <link rel="stylesheet" type="text/css" href="{% static "css/reports/daily_report.css" %}">
-    <script type="text/javascript" src="{% static "js/reports/websocket.js" %}"></script>
   </head>
   <body>
     <div class="main">
@@ -685,10 +684,6 @@
       <div class="footer">
         <br>
       </div>
-    </div>
-    <div id="sse">
-        <h3>Botão para gerar Relatório:</h3>
-        <button onclick="WebSocketAPI(device_token='{{tb_context}}', device_id='{{device_id}}', startTs='{{startTs}}', endTs='{{endTs}}')">WEBSOCKET</button>
     </div>
   </body>
 </html>

@@ -10,6 +10,8 @@ from django.http.response import HttpResponseBadRequest
 from django.conf import settings
 
 import tb
+import json
+from websocket import create_connection
 
 
 class DailyReportView(View):
@@ -28,26 +30,45 @@ class DailyReportView(View):
     def request_token(self):
         platform = tb.TB()
         return platform.login()
+    
+    def connect_websocket(self, token, entityId, startTs, endTs):
+        ws = create_connection("ws://platform.canionlabs.io:9090/api/ws/plugins/telemetry?token="+token)
+        
+        object_send = {
+            'historyCmds': [
+              {
+                  'cmdId': 1,
+                  'entityType': "DEVICE",
+                  'entityId': entityId,
+                  'keys': "t0,t1,h0,h1",
+                  'startTs': startTs,
+                  'endTs': endTs
+              }
+            ]
+        }
+        data = json.dumps(object_send)
+        ws.send(data)
+
+        result = ws.recv()
+        ws.close()
+        
+        return result
 
     def get(self, request, *args, **kwargs):
 
-        device_id = kwargs["device_id"]
         selected_date = request.GET.get("date", timezone.now())
         try:
             fmt_date = self._datetime_handler(selected_date)
         except ValueError as e:
             return HttpResponseBadRequest("Invalid date format")
 
+        device_id = kwargs["device_id"]
         tb_context = self.request_token()
         starts, ends = self._get_starts_ends_timestamps(fmt_date)
 
-        data = {
-            'tb_context': tb_context["token"],
-            'device_id': device_id,
-            'startTs': int(starts)*1000,
-            'endTs': int(ends)*1000
-        }
+        result_ws = self.connect_websocket(tb_context["token"], device_id, int(starts)*1000, int(ends)*1000)
+        print(f'RESULTADO: {result_ws}')
 
         return TemplateResponse(
-            request, 'reports/daily_report.html', data
+            request, 'reports/daily_report.html'
         )
