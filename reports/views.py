@@ -54,6 +54,20 @@ class DailyReportView(View):
         
         return result
 
+    def _get_bigger_smaller(self, response):
+        bigger = 0
+        smaller = 100
+
+        for key in response:
+            for index in range(len(response[key])):
+                if smaller > float(response[key][index][1]):
+                    smaller = float(response[key][index][1])
+
+                if bigger < float(response[key][index][1]):
+                    bigger = float(response[key][index][1])
+
+        return bigger, smaller
+
     def get(self, request, *args, **kwargs):
 
         selected_date = request.GET.get("date", timezone.now())
@@ -63,12 +77,25 @@ class DailyReportView(View):
             return HttpResponseBadRequest("Invalid date format")
 
         device_id = kwargs["device_id"]
-        tb_context = self.request_token()
+        tb_context = self.request_token()["token"]
         starts, ends = self._get_starts_ends_timestamps(fmt_date)
 
-        result_ws = self.connect_websocket(tb_context["token"], device_id, int(starts)*1000, int(ends)*1000)
-        print(f'RESULTADO: {result_ws}')
+        result_ws = json.loads(self.connect_websocket(
+            tb_context, 
+            device_id, 
+            int(starts)*1000, 
+            int(ends)*1000)
+            )
+
+        bigger, smaller = self._get_bigger_smaller(result_ws["data"])
+
+        data = {
+            'bigger': bigger,
+            'smaller' : smaller,
+            'month': range(32),
+        }
 
         return TemplateResponse(
-            request, 'reports/daily_report.html'
+            request, 'reports/daily_report.html', data
         )
+    #http://localhost:8000/reports/13ddf920-ff7d-11e9-8ad7-1d31d20907a4/daily/?date=29/11/2019
