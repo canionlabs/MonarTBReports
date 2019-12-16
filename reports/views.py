@@ -14,13 +14,6 @@ import tb
 
 
 class DailyReportView(View):
-    def _get_starts_ends_timestamps(self, date):
-        starts = date.replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )
-        ends = starts + timedelta(days=1)
-        return starts.timestamp(), ends.timestamp()
-
     def _get_month_bondaries(self, date):
         starts = date.replace(day=1)
         ends = starts.replace(month=starts.month + 1)
@@ -70,30 +63,20 @@ class DailyReportView(View):
         temperature_values = [value[1] for value in temperature_list]
         return min(temperature_list), max(temperature_list)
 
-    def _slice_period(self, temperature_list, day_date, start_hour, end_hour):
-        start_timestamp = day_date.replace(hour=start_hour).timestamp() * 1000
-        end_timestamp = day_date.replace(hour=end_hour).timestamp() * 1000
-
-        period_filter = filter(
-            lambda item: item[0] >= start_timestamp and item[0] < end_timestamp,
-            temperature_list
-        )
+    def _slice_period(self, temperature_list, day_date, start_hour, end_hour, minute_end):
+        start_timestamp = int(day_date.replace(hour=start_hour).timestamp()) * 1000
+        end_timestamp = int(day_date.replace(hour=end_hour, minute=minute_end).timestamp()) * 1000
 
         dd = []
         for item in temperature_list:
-            if item[0] >= start_timestamp and item[0] < end_timestamp:
+            if item[0] >= start_timestamp and item[0] <= end_timestamp:
                 dd.append(item)
-        # print(start_timestamp)
-        # print(end_timestamp)
-        # print(list(period_filter) == temperature_list)
-        print(dd)
 
-        # return [item[1] for item in period_filter]
         return dd
 
 
     def get(self, request, *args, **kwargs):
-        context = {}
+        response = {}
 
         selected_date = request.GET.get("date", timezone.now())
         try:
@@ -105,26 +88,24 @@ class DailyReportView(View):
         tb_context = self.request_token()["token"]
 
         starts, ends = self._get_month_bondaries(fmt_date)
-        print(starts)
-        print(ends)
+
         result_ws = json.loads(self.connect_websocket(
             tb_context,
             device_id, 
             int(starts)*1000, 
-            int(ends)*1000)
-        )
+            int(ends)*1000
+        ))
 
         monthly_data = self._get_temperature_list(result_ws["data"])
-        print(calendar.monthrange(fmt_date.year, fmt_date.month))
         days_on_month = calendar.monthrange(fmt_date.year, fmt_date.month)[1]
+
         for day in range(1, days_on_month + 1):
             day_date = fmt_date.replace(day=day)
-            print(day_date)
-            period_1_temp_list = self._slice_period(monthly_data, day_date, start_hour=8, end_hour=16)
-            period_2_temp_list = self._slice_period(monthly_data, day_date, start_hour=16, end_hour=0)
-            period_3_temp_list = self._slice_period(monthly_data, day_date, start_hour=0, end_hour=8)
+            period_1_temp_list = self._slice_period(monthly_data, day_date, start_hour=8, end_hour=15, minute_end=59)
+            period_2_temp_list = self._slice_period(monthly_data, day_date, start_hour=16, end_hour=23, minute_end=59)
+            period_3_temp_list = self._slice_period(monthly_data, day_date, start_hour=0, end_hour=7, minute_end=59)
 
-            context.update({
+            response.update({
                 day: {
                     "period_1": {
                         "mon": period_1_temp_list[0] if period_1_temp_list else None,
@@ -144,8 +125,7 @@ class DailyReportView(View):
                 }
             })
 
-        import pprint
-        pprint.pprint(context)
+        context = {"response":response}
 
         return TemplateResponse(
             request, 'reports/daily_report.html', context

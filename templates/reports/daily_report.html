@@ -105,20 +105,38 @@
             </tr>
           </thead>
           <tbody>
-            {% for day in days_range %}
+            {% for day, value in response.items %}
               <tr>
                 <td>{{ day }}</td>
+
+                {% if value.period_1.mon.1 is None %}
+                  <td>None</td>
+                {% else %}
+                  <td>{{ value.period_1.mon.1 }}</td>
+                {% endif %}
+
+                <td>{{ value.period_1.min }}</td>
+                <td>{{ value.period_1.max }}</td>
                 <td></td>
-                <td>{{ smaller }}</td>
-                <td>{{ bigger }}</td>
+                
+                {% if value.period_2.mon.1 is None %}
+                  <td>None</td>
+                {% else %}
+                  <td>{{ value.period_2.mon.1 }}</td>
+                {% endif %}
+
+                <td>{{ value.period_2.min }}</td>
+                <td>{{ value.period_2.max }}</td>
                 <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
+                
+                {% if value.period_3.mon.1 is None %}
+                  <td>None</td>
+                {% else %}
+                  <td>{{ value.period_3.mon.1 }}</td>
+                {% endif %}
+
+                <td>{{ value.period_3.min }}</td>
+                <td>{{ value.period_3.max }}</td>
                 <td></td>
                 <td></td>
               </tr>
