@@ -59,10 +59,6 @@ class DailyReportView(View):
 
         return all_values  # [ [timestamp, temperature] ]
 
-    def _get_temperature_bondaries(self, temperature_list):
-        temperature_values = [value[1] for value in temperature_list]
-        return min(temperature_list), max(temperature_list)
-
     def _slice_period(self, temperature_list, day_date, start_hour, end_hour, minute_end):
         start_timestamp = int(day_date.replace(hour=start_hour).timestamp()) * 1000
         end_timestamp = int(day_date.replace(hour=end_hour, minute=minute_end).timestamp()) * 1000
@@ -96,6 +92,7 @@ class DailyReportView(View):
             int(ends)*1000
         ))
 
+        print(result_ws["data"])
         monthly_data = self._get_temperature_list(result_ws["data"])
         days_on_month = calendar.monthrange(fmt_date.year, fmt_date.month)[1]
 
