@@ -32,16 +32,21 @@ class DailyReportView(View):
         ws = create_connection("ws://platform.canionlabs.io:9090/api/ws/plugins/telemetry?token="+token)
 
         object_send = {
+            'tsSubCmds': [],
             'historyCmds': [
-              {
-                  'cmdId': 1,
-                  'entityType': "DEVICE",
-                  'entityId': entityId,
-                  'keys': "t0,t1,t2",
-                  'startTs': startTs,
-                  'endTs': endTs
-              }
-            ]
+                {
+                    'cmdId': 1,
+                    'entityType': "DEVICE",
+                    'entityId': entityId,
+                    'keys': "t0,t1,t2",
+                    'startTs': startTs,
+                    'endTs': endTs,
+                    'interval':7200000,
+                    'limit':144,
+                    'agg':"AVG"
+                }
+            ],
+            'attrSubCmds': []
         }
         data = json.dumps(object_send)
         ws.send(data)
@@ -92,7 +97,6 @@ class DailyReportView(View):
             int(ends)*1000
         ))
 
-        print(result_ws["data"])
         monthly_data = self._get_temperature_list(result_ws["data"])
         days_on_month = calendar.monthrange(fmt_date.year, fmt_date.month)[1]
 
@@ -106,18 +110,18 @@ class DailyReportView(View):
                 day: {
                     "period_1": {
                         "mon": period_1_temp_list[0] if period_1_temp_list else None,
-                        "min": min([item[1] for item in period_1_temp_list]) if period_1_temp_list else None,
-                        "max": max([item[1] for item in period_1_temp_list]) if period_1_temp_list else None,
+                        "min": min([item[1] for item in period_1_temp_list]) if period_1_temp_list else "-",
+                        "max": max([item[1] for item in period_1_temp_list]) if period_1_temp_list else "-",
                     },
                     "period_2": {
                         "mon": period_2_temp_list[0] if period_2_temp_list else None,
-                        "min": min([item[1] for item in period_2_temp_list]) if period_2_temp_list else None,
-                        "max": max([item[1] for item in period_2_temp_list]) if period_2_temp_list else None,
+                        "min": min([item[1] for item in period_2_temp_list]) if period_2_temp_list else "-",
+                        "max": max([item[1] for item in period_2_temp_list]) if period_2_temp_list else "-",
                     },
                     "period_3": {
                         "mon": period_3_temp_list[0] if period_3_temp_list else None,
-                        "min": min([item[1] for item in period_3_temp_list]) if period_3_temp_list else None,
-                        "max": max([item[1] for item in period_3_temp_list]) if period_3_temp_list else None,
+                        "min": min([item[1] for item in period_3_temp_list]) if period_3_temp_list else "-",
+                        "max": max([item[1] for item in period_3_temp_list]) if period_3_temp_list else "-",
                     },
                 }
             })

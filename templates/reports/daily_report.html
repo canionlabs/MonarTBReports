@@ -109,34 +109,22 @@
               <tr>
                 <td>{{ day }}</td>
 
-                {% if value.period_1.mon.1 is None %}
-                  <td>None</td>
-                {% else %}
-                  <td>{{ value.period_1.mon.1 }}</td>
-                {% endif %}
+                <td>{{ value.period_1.mon.1  | floatformat:2 | default:"-" }}</td>
 
-                <td>{{ value.period_1.min }}</td>
-                <td>{{ value.period_1.max }}</td>
+                <td>{{ value.period_1.min | floatformat:2 | default:"-"}}</td>
+                <td>{{ value.period_1.max | floatformat:2 | default:"-"}}</td>
                 <td></td>
                 
-                {% if value.period_2.mon.1 is None %}
-                  <td>None</td>
-                {% else %}
-                  <td>{{ value.period_2.mon.1 }}</td>
-                {% endif %}
+                <td>{{ value.period_3.mon.1  | floatformat:2 | default:"-" }}</td>
 
-                <td>{{ value.period_2.min }}</td>
-                <td>{{ value.period_2.max }}</td>
+                <td>{{ value.period_2.min | floatformat:2 | default:"-"}}</td>
+                <td>{{ value.period_2.max | floatformat:2 | default:"-"}}</td>
                 <td></td>
                 
-                {% if value.period_3.mon.1 is None %}
-                  <td>None</td>
-                {% else %}
-                  <td>{{ value.period_3.mon.1 }}</td>
-                {% endif %}
+                <td>{{ value.period_3.mon.1  | floatformat:2 | default:"-" }}</td>
 
-                <td>{{ value.period_3.min }}</td>
-                <td>{{ value.period_3.max }}</td>
+                <td>{{ value.period_3.min | floatformat:2 | default:"-"}}</td>
+                <td>{{ value.period_3.max | floatformat:2 | default:"-"}}</td>
                 <td></td>
                 <td></td>
               </tr>
