@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  db:
+    image: "postgres:11-alpine"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  web:
+    build: .
+    command: bash -c "gunicorn tbtw.wsgi:application --bind 0.0.0.0:8004 --timeout 120 --workers 1 --log-level=degub --reload"
+    volumes:
+      - .:/opt/ThingsboardTW/
+    ports:
+      - "8004:8004"
+    depends_on:
+     - db
+
+volumes:
+  db_data:
+
