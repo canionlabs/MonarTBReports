@@ -8,9 +8,9 @@ services:
 
   web:
     build: .
-    command: bash -c "gunicorn tbtw.wsgi:application --bind 0.0.0.0:8004 --timeout 120 --workers 1 --log-level=degub --reload"
+    command: bash -c "gunicorn monar_tbreports.wsgi:application --bind 0.0.0.0:8004 --timeout 120 --workers 1 --log-level=degub --reload"
     volumes:
-      - .:/opt/ThingsboardTW/
+      - .:/opt/MonarTBReports
     ports:
       - "8004:8004"
     depends_on:
