@@ -14,11 +14,6 @@ import tb
 
 
 class MonthlyReportView(View):
-    def _get_month_bondaries(self, date):
-        start_timestamp = date.replace(day=1)
-        end_timestamp = start_timestamp.replace(month=start_timestamp.month + 1)
-        return start_timestamp.timestamp(), end_timestamp.timestamp()
-
     def _datetime_handler(self, date):
         if isinstance(date, datetime):
             return date
@@ -27,6 +22,11 @@ class MonthlyReportView(View):
     def request_token(self):
         platform = tb.TB()
         return platform.login()
+
+    def _get_month_bondaries(self, date):
+        start_timestamp = date.replace(day=1)
+        end_timestamp = start_timestamp.replace(month=start_timestamp.month + 1)
+        return start_timestamp.timestamp(), end_timestamp.timestamp()
     
     def connect_websocket(self, token, entityId, startTs, endTs):
         websocket_connection = create_connection("ws://platform.canionlabs.io:9090/api/ws/plugins/telemetry?token="+token)
