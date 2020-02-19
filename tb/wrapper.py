@@ -22,9 +22,6 @@ class TB:
                 f"{response.content}"
             )
 
-    def _update_headers(self, new_header: dict):
-        self.session.headers.update(new_header)
-
     def login(self):
         auth_url = f"{self.URL}/api/auth/login"
         response = self.session.post(auth_url, json={
@@ -33,8 +30,4 @@ class TB:
         })
         self._response_handler(200, response)
 
-        # auth_data = response.json()
-        # self._update_headers({
-        #     "X-Authorization": f"Bearer {auth_data['token']}"
-        # })
         return response.json()

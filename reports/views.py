@@ -13,12 +13,7 @@ from websocket import create_connection
 import tb
 
 
-class DailyReportView(View):
-    def _get_month_bondaries(self, date):
-        starts = date.replace(day=1)
-        ends = starts.replace(month=starts.month + 1)
-        return starts.timestamp(), ends.timestamp()
-
+class MonthlyReportView(View):
     def _datetime_handler(self, date):
         if isinstance(date, datetime):
             return date
@@ -27,9 +22,14 @@ class DailyReportView(View):
     def request_token(self):
         platform = tb.TB()
         return platform.login()
+
+    def _get_month_bondaries(self, date):
+        start_timestamp = date.replace(day=1)
+        end_timestamp = start_timestamp.replace(month=start_timestamp.month + 1)
+        return start_timestamp.timestamp(), end_timestamp.timestamp()
     
     def connect_websocket(self, token, entityId, startTs, endTs):
-        ws = create_connection("ws://platform.canionlabs.io:9090/api/ws/plugins/telemetry?token="+token)
+        websocket_connection = create_connection("ws://platform.canionlabs.io:9090/api/ws/plugins/telemetry?token="+token)
 
         object_send = {
             'tsSubCmds': [],
@@ -49,10 +49,10 @@ class DailyReportView(View):
             'attrSubCmds': []
         }
         data = json.dumps(object_send)
-        ws.send(data)
+        websocket_connection.send(data)
 
-        result = ws.recv()
-        ws.close()
+        result = websocket_connection.recv()
+        websocket_connection.close()
 
         return result
 
@@ -68,45 +68,16 @@ class DailyReportView(View):
         start_timestamp = int(day_date.replace(hour=start_hour).timestamp()) * 1000
         end_timestamp = int(day_date.replace(hour=end_hour, minute=minute_end).timestamp()) * 1000
 
-        dd = []
+        items_sliced = []
         for item in temperature_list:
             if item[0] >= start_timestamp and item[0] <= end_timestamp:
-                dd.append(item)
+                items_sliced.append(item)
 
-        return dd
+        return items_sliced
 
+    def update_response(self ,day, period_1_temp_list, period_2_temp_list, period_3_temp_list,response):
 
-    def get(self, request, *args, **kwargs):
-        response = {}
-
-        selected_date = request.GET.get("date", timezone.now())
-        try:
-            fmt_date = self._datetime_handler(selected_date)
-        except ValueError as e:
-            return HttpResponseBadRequest("Invalid date format")
-
-        device_id = kwargs["device_id"]
-        tb_context = self.request_token()["token"]
-
-        starts, ends = self._get_month_bondaries(fmt_date)
-
-        result_ws = json.loads(self.connect_websocket(
-            tb_context,
-            device_id, 
-            int(starts)*1000, 
-            int(ends)*1000
-        ))
-
-        monthly_data = self._get_temperature_list(result_ws["data"])
-        days_on_month = calendar.monthrange(fmt_date.year, fmt_date.month)[1]
-
-        for day in range(1, days_on_month + 1):
-            day_date = fmt_date.replace(day=day)
-            period_1_temp_list = self._slice_period(monthly_data, day_date, start_hour=8, end_hour=15, minute_end=59)
-            period_2_temp_list = self._slice_period(monthly_data, day_date, start_hour=16, end_hour=23, minute_end=59)
-            period_3_temp_list = self._slice_period(monthly_data, day_date, start_hour=0, end_hour=7, minute_end=59)
-
-            response.update({
+        response.update({
                 day: {
                     "period_1": {
                         "mon": period_1_temp_list[0] if period_1_temp_list else None,
@@ -126,9 +97,43 @@ class DailyReportView(View):
                 }
             })
 
+        return response
+
+
+    def get(self, request, *args, **kwargs):
+        response = {}
+
+        selected_date = request.GET.get("date", timezone.now())
+        try:
+            fmt_date = self._datetime_handler(selected_date)
+        except ValueError as e:
+            return HttpResponseBadRequest("Invalid date format")
+
+        device_id = kwargs["device_id"]
+        thingsboard_context = self.request_token()["token"]
+
+        starts, ends = self._get_month_bondaries(fmt_date)
+
+        result_websocket = json.loads(self.connect_websocket(
+            thingsboard_context,
+            device_id, 
+            int(starts)*1000, 
+            int(ends)*1000
+        ))
+
+        monthly_data = self._get_temperature_list(result_websocket["data"])
+        days_on_month = calendar.monthrange(fmt_date.year, fmt_date.month)[1]
+
+        for day in range(1, days_on_month + 1):
+            day_date = fmt_date.replace(day=day)
+            period_1_temp_list = self._slice_period(monthly_data, day_date, start_hour=8, end_hour=15, minute_end=59)
+            period_2_temp_list = self._slice_period(monthly_data, day_date, start_hour=16, end_hour=23, minute_end=59)
+            period_3_temp_list = self._slice_period(monthly_data, day_date, start_hour=0, end_hour=7, minute_end=59)
+
+            response = self.update_response(day, period_1_temp_list, period_2_temp_list, period_3_temp_list, response)
+
         context = {"response":response}
 
         return TemplateResponse(
             request, 'reports/daily_report.html', context
         )
-    #http://localhost:8000/reports/13ddf920-ff7d-11e9-8ad7-1d31d20907a4/daily/?date=29/11/2019
