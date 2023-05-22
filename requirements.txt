@@ -3,4 +3,4 @@ python-decouple==3.1
 pytz==2019.3
 sqlparse==0.3.0
 websocket_client==0.57.0
-requests==2.22.0
+requests==2.31.0
